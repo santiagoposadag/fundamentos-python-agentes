@@ -2,8 +2,8 @@ from datetime import date
 
 # ─── Credenciales del sistema ────────────────────────────────────────────────
 USUARIOS = {
-    "invitado": {"password": "inv123",  "rol": "invitado"},
-    "admin":    {"password": "adm456",  "rol": "admin"},
+    "invitado": {"password": "123456",  "rol": "invitado"},
+    "admin":    {"password": "123456",  "rol": "admin"},
 }
 
 # ─── Fase 1: Login ────────────────────────────────────────────────────────────

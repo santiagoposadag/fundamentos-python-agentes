@@ -1,4 +1,84 @@
 from datetime import datetime
+from typing import Dict, List
+
+# Los alias de tipo permiten que el código sea más legible y mantenible, ya que explícitamente
+# definimos la estructura de la memoria del agente. Para que así entiendan rápidamente qué forma tiene cada dato sin analizar toda la lógica.
+Recuerdo = Dict[str, str]
+MemoriaAgente = List[Recuerdo]
+
+
+def contar_letras(palabra: str) -> str:
+    tot_letras = len(palabra)
+    tot_vocales = 0
+    tot_cons = 0
+
+    for letra in palabra:
+        if letra in "aeiou":
+            tot_vocales += 1
+        else:
+            tot_cons += 1
+
+    return (
+        f"Palabra ingresada: {palabra}\n"
+        f"Total de vocales: {tot_vocales}\n"
+        f"Total de consonantes: {tot_cons}\n"
+        f"Total de letras: {tot_letras}"
+    )
+
+
+def obtener_fecha_actual(rol_usuario_func: str) -> str:
+    if rol_usuario_func == "invitado":
+        # Se lanza el error con raise y Python detiene la ejecución. El error viaja hasta el bloque try/except en el menú principal donde se atrapa
+        # con except PermissionError para mostrar un mensaje bonito sin que el programa se rompa.
+        raise PermissionError("Privilegios insuficientes")
+    return datetime.now().strftime("%Y-%m-%d")
+
+
+def validar_password(nueva_pass: str, rol_usuario_func: str) -> bool:
+    return not (len(nueva_pass) < 8 or nueva_pass == rol_usuario_func)
+
+
+def calculadora(num1_func: float, num2_func: float, operacion_func: str) -> float:
+    if operacion_func == "+":
+        return num1_func + num2_func
+    if operacion_func == "-":
+        return num1_func - num2_func
+    if operacion_func == "*":
+        return num1_func * num2_func
+    if operacion_func == "/":
+        if num2_func == 0:
+            raise ValueError("No se puede dividir por cero.")
+        return num1_func / num2_func
+    raise ValueError("Operación no válida.")
+
+
+def gestionar_historial(accion: str, memoria: MemoriaAgente) -> str:
+    if accion == "all":
+        if not memoria:
+            return "[PseudoAgente] La memoria está vacía."
+
+        lineas: List[str] = []
+        for recuerdo in memoria:
+            lineas.append(f"Autor: {recuerdo['autor']} | Acción: {recuerdo['descripcion']}")
+        return "\n".join(lineas)
+
+    if accion == "clear":
+        memoria.clear()
+        return "[PseudoAgente] Memoria borrada con éxito."
+
+    coincidencias: List[str] = []
+    for recuerdo in memoria:
+        descripcion_min = recuerdo["descripcion"].lower()
+        if accion in descripcion_min:
+            coincidencias.append(
+                f"-> Encontrado: [Autor: {recuerdo['autor']}] Mensaje: {recuerdo['descripcion']}"
+            )
+
+    if not coincidencias:
+        return "[PseudoAgente] No encontré registros que coincidan con esa palabra."
+
+    coincidencias.append(f"[PseudoAgente] Se encontraron {len(coincidencias)} coincidencias.")
+    return "\n".join(coincidencias)
 
 print("----- Iniciando el pseudoagente estilo consola -------")
 
@@ -12,7 +92,7 @@ intentos_maximos = 3
 intentos_actuales = 0
 autenticado = False
 rol_usuario = ""
-historial_chat = []
+historial_chat: MemoriaAgente = []
 
 
 while intentos_actuales < intentos_maximos and not autenticado:
@@ -53,93 +133,52 @@ while sistema_activo:
         # Guardamos el recuerdo del comando ping ejecutado
         historial_chat.append({"autor": rol_usuario, "descripcion": "El usuario ejecuto el comando ping"})
     elif cmd =="contar":
-        palabra = input("Ingrese una palabra: ").lower()
-        tot_letras = len(palabra)
-        tot_vocales = 0
-        tot_cons = 0
-        
-        for p in palabra:
-            if p in "aeiou":
-                tot_vocales +=1
-            else:
-                tot_cons +=1
-        
-        print(f"Palabra ingresada: {palabra}")
-        print(f"Total de vocales: {tot_vocales}")
-        print(f"Total de consonantes: {tot_cons}")
-        print(f"Total de letras: {tot_letras}")
+        palabra_ingresada = input("Ingrese una palabra: ").lower()
+        print(contar_letras(palabra_ingresada))
         # Guardamos el recuerdo con la palabra usada
-        historial_chat.append({"autor": rol_usuario, "descripcion": f"Contó letras en la palabra: {palabra}"})
+        historial_chat.append({"autor": rol_usuario, "descripcion": f"Contó letras en la palabra: {palabra_ingresada}"})
     elif cmd == "fecha_hoy":
-        if rol_usuario == "invitado":
+        try:
+            fecha_actual = obtener_fecha_actual(rol_usuario)
+            print(f"Fecha actual: {fecha_actual}")
+            historial_chat.append({"autor": rol_usuario, "descripcion": f"Consultó la fecha actual: {fecha_actual}"})
+        except PermissionError:
             print("[Acceso Denegado] Este comando requiere privilegios de administrador.")
             historial_chat.append({"autor": rol_usuario, "descripcion": "Intento fallido de ver fecha (Acceso denegado)"})
-            continue
-
-        fecha_actual = datetime.now().strftime("%Y-%m-%d")
-        print(f"Fecha actual: {fecha_actual}")
-        historial_chat.append({"autor": rol_usuario, "descripcion": f"Consultó la fecha actual: {fecha_actual}"})
 
     elif cmd == "validar_pass":
-        nueva_pass = input("Ingrese la nueva contraseña: ")
-        if len(nueva_pass) < 8 or nueva_pass == rol_usuario:
-            print("La contraseña no cumple con las políticas de seguridad.")
-            historial_chat.append({"autor": rol_usuario, "descripcion": "Intento de cambio de pass inválido"})
-        else:
+        nueva_pass_ingresada = input("Ingrese la nueva contraseña: ")
+        if validar_password(nueva_pass_ingresada, rol_usuario):
             print("Contraseña válida. Se ha actualizado correctamente.")
             historial_chat.append({"autor": rol_usuario, "descripcion": "Validó una nueva contraseña exitosamente"})
+        else:
+            print("La contraseña no cumple con las políticas de seguridad.")
+            historial_chat.append({"autor": rol_usuario, "descripcion": "Intento de cambio de pass inválido"})
 
     elif cmd == "calculadora":
-#Se hace necesario convertir a float los valores de los input para poder permitir las operaciones matemáticas que se realizarán sobre ellos. 
-        num1 = float(input("Ingrese el primer número: "))
-        num2 = float(input("Ingrese el segundo número: "))
-        operacion = input("Ingrese la operación (+, -, *, /): ")
+        try:
+            num1 = float(input("Ingrese el primer número: "))
+            num2 = float(input("Ingrese el segundo número: "))
+            operacion = input("Ingrese la operación (+, -, *, /): ")
 
-        if operacion == "+":
-            resultado = num1 + num2
-        elif operacion == "-":
-            resultado = num1 - num2
-        elif operacion == "*":
-            resultado = num1 * num2
-        elif operacion == "/":
-            if num2 != 0:
-                resultado = num1 / num2
+            resultado = calculadora(num1, num2, operacion)
+            print(f"Resultado: {resultado}")
+            historial_chat.append({"autor": rol_usuario, "descripcion": f"Realizó una operación: {num1} {operacion} {num2} = {resultado}"})
+        except ValueError as error:
+            if str(error) == "No se puede dividir por cero." or str(error) == "Operación no válida.":
+                print(f"Error: {error}")
             else:
-                print("Error: No se puede dividir por cero.")
-                continue
-        else:
-            print("Operación no válida.")
-            continue
-
-        print(f"Resultado: {resultado}")
-        historial_chat.append({"autor": rol_usuario, "descripcion": f"Realizó una operación: {num1} {operacion} {num2} = {resultado}"})
+                print("Error: Debe ingresar valores numéricos válidos.")
 
     elif cmd.startswith("historial"):
         partes = cmd.split() 
         if len(partes) > 1 and partes[1] == "all":
-            if not historial_chat:
-                print("[PseudoAgente] La memoria está vacía.")
-            for memoria in historial_chat:
-                print(f"Autor: {memoria['autor']} | Acción: {memoria['descripcion']}")
+            print(gestionar_historial("all", historial_chat))
 
         elif len(partes) > 1 and partes[1] == "clear":
-            historial_chat.clear()
-            print("[PseudoAgente] Memoria borrada con éxito.")
+            print(gestionar_historial("clear", historial_chat))
         else:
             busqueda = input("Ingresa la palabra clave a buscar: ").lower()
-            coincidencias = 0
-            
-            for memoria in historial_chat:
-                descripcion_min = memoria["descripcion"].lower()
-                # Logré saber si una palabra estaba dentro de otra usando el operador in que busca dentro de otra adena en un string
-                # Resolví las singularidades del comando usando .split() para dividir la entrada en una lista y evaluar así su contenido
-                if busqueda in descripcion_min:
-                    print(f"-> Encontrado: [Autor: {memoria['autor']}] Mensaje: {memoria['descripcion']}")
-                    coincidencias += 1
-            
-            if coincidencias == 0:
-                print("[PseudoAgente] No encontré registros que coincidan con esa palabra.")
-            else:
-                print(f"[PseudoAgente] Se encontraron {coincidencias} coincidencias.")
+            print(gestionar_historial(busqueda, historial_chat))
     else:
         print("------Comando desconocido. Intente de nuevo.-------")

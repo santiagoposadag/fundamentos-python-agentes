@@ -1,6 +1,15 @@
 # Runtime generated files
 historial.json
 
+# Variables de entorno
+.env
+Reto/.env
+
+# Entornos virtuales
+.venv/
+venv/
+Reto/.venv/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

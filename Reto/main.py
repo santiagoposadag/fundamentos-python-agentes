@@ -212,33 +212,26 @@ def briefing(nombre: str):
     }
 
     try:
-        respuesta = http_client.get(
-            EXTERNAL_API_URL,
-            params={"q": nombre, "limit": 1, "fields": "title,author_name,first_publish_year"},
-            timeout=3,  
-        )
+        respuesta = http_client.get(EXTERNAL_API_URL, timeout=3)
         respuesta.raise_for_status()
         datos_ext = respuesta.json()
-        libros = datos_ext.get("docs", [])
-        if libros:
-            libro = libros[0]
-            inteligencia = {
-                "lectura_recomendada": libro.get("title", "Sin título"),
-                "autor": libro.get("author_name", ["Desconocido"])[0],
-                "año": libro.get("first_publish_year", "?"),
-            }
-        else:
-            inteligencia = {"lectura_recomendada": "Sin resultados para este agente."}
+        personas = datos_ext.get("people", [])
+        nombres_externos = [p["name"] for p in personas]
+        inteligencia = {
+            "agentes_en_orbita": len(personas),
+            "nombres": nombres_externos,
+            "mensaje": f"Hay {len(personas)} personas actualmente en el espacio.",
+        }
         fuente = EXTERNAL_API_URL
         logger.info(f"Briefing de '{nombre}' generado con datos externos.")
 
     except http_client.exceptions.Timeout:
-        inteligencia = {"lectura_recomendada": "Fuente externa no disponible (timeout)."}
+        inteligencia = {"agentes_en_orbita": None, "mensaje": "Fuente externa no disponible (timeout)."}
         fuente = "no disponible (timeout)"
         logger.warning(f"Timeout al consultar API externa para briefing de '{nombre}'.")
 
     except Exception as exc:
-        inteligencia = {"lectura_recomendada": "Fuente externa no disponible."}
+        inteligencia = {"agentes_en_orbita": None, "mensaje": "Fuente externa no disponible."}
         fuente = "no disponible (error)"
         logger.warning(f"Error al consultar API externa para '{nombre}': {exc}")
 

@@ -8,5 +8,5 @@ AGENCIA_API_KEY: str = os.environ.get("AGENCIA_API_KEY", "")
 
 EXTERNAL_API_URL: str = os.environ.get(
     "EXTERNAL_API_URL",
-    "https://openlibrary.org/search.json",
+    "http://api.open-notify.org/astros.json",
 )

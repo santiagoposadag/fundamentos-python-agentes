@@ -104,7 +104,7 @@ Además del mínimo requerido, añadí dos columnas:
 
 ### 2. API pública elegida
 
-Elegí **Open Library** (`https://openlibrary.org/search.json`) porque encaja con la narrativa de agentes: cada agente recibe una "lectura recomendada" basada en su nombre — como un dossier de misión con bibliografía de referencia. Es una API pública, gratuita, sin autenticación y con respuesta JSON estable. El campo `lectura_recomendada` del briefing devuelve el título del primer libro que Open Library asocia al nombre del agente, creando un dato único para cada uno.
+Elegí **Open Notify** (`http://api.open-notify.org/astros.json`) porque encaja perfectamente con la narrativa de agentes: el briefing muestra en tiempo real cuántas personas están en el espacio y sus nombres — como un reporte de "agentes en misión activa" fuera del planeta. Es una API pública, gratuita, sin autenticación, usa HTTP puro (sin SSL) y devuelve un JSON estable con los campos `people`, `number` y `message`.
 
 ### 3. Estrategia de resiliencia ante fallo externo
 
@@ -148,7 +148,7 @@ curl -X POST http://127.0.0.1:8000/agentes/ \
 - [Python logging — HOWTO](https://docs.python.org/3/howto/logging.html)
 - [Python logging — basicConfig](https://docs.python.org/3/library/logging.html#logging.basicConfig)
 - [requests — Timeouts](https://requests.readthedocs.io/en/latest/user/advanced/#timeouts)
-- [Open Library API](https://openlibrary.org/developers/api)
+- [Open Notify API — Personas en el espacio](http://open-notify.org/Open-Notify-API/People-In-Space/)
 - [Public APIs list (GitHub)](https://github.com/public-apis/public-apis)
 - [Pydantic v2 — BaseModel](https://docs.pydantic.dev/latest/concepts/models/)
 - [SQLite — Python docs](https://docs.python.org/3/library/sqlite3.html)

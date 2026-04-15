@@ -55,6 +55,7 @@ def paso2_crear_agentes() -> None:
         else:
             error(f"Error creando '{agente['nombre']}': {r.status_code} — {r.json()}")
 
+    r_sin_key = requests.post(f"{BASE_URL}/agentes/", json=agentes[0])
     if r_sin_key.status_code == 401:
         ok("Sin API key → 401 correctamente rechazado.")
     else:

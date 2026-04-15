@@ -1,7 +1,8 @@
 import logging
 import requests as http_client
 
-from fastapi import FastAPI, HTTPException, Depends, Header
+from fastapi import FastAPI, HTTPException, Depends
+from fastapi.security import APIKeyHeader
 from pydantic import BaseModel
 
 from agente import PseudoAgente, AgenteAdmin
@@ -57,7 +58,9 @@ class MisionRequest(BaseModel):
     creado_por: str = "sistema"
 
 
-def verificar_api_key(x_api_key: str | None = Header(default=None, description="Llave de acceso de la Agencia")) -> str:
+_api_key_scheme = APIKeyHeader(name="X-API-KEY", auto_error=False)
+
+def verificar_api_key(x_api_key: str | None = Depends(_api_key_scheme)) -> str:
     if not AGENCIA_API_KEY:
         logger.error("AGENCIA_API_KEY no configurada en el entorno.")
         raise HTTPException(status_code=500, detail="Servidor mal configurado: falta API key.")

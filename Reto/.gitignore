@@ -1,0 +1,5 @@
+# Ignorar archivos de entorno y bases de datos locales
+.env
+agentes.db
+__pycache__/
+*.pyc

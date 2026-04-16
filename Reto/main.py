@@ -152,7 +152,7 @@ def api_briefing_agente(nombre: str):
     
     externo_info = "Información externa no disponible actualmente."
     try:
-        response = requests.get(EXTERNAL_API_URL, timeout=5)
+        response = requests.get(EXTERNAL_API_URL)
         if response.status_code == 200:
             data = response.json()
             externo_info = data.get("fact", data.get("message", "Sin contenido relevante"))

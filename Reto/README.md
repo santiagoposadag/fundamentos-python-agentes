@@ -50,7 +50,7 @@ Este proyecto integra persistencia, APIs web, seguridad y consumo de servicios e
    Se utilizó `https://catfact.ninja/fact`. Elegí esta API porque ofrece hechos ligeros en formato JSON que sirven como "curiosidades" o "datos de distracción" en el briefing del agente, dándole una narrativa menos rígida y más "viva" al sistema.
 
 3. **Estrategia de resiliencia:**
-   Se implementó un `timeout` de 5 segundos en la petición a la API externa y un bloque `try/except`. Si la API falla o tarda demasiado, el servidor responde con un mensaje de fallback ("Información externa no disponible") en lugar de fallar, garantizando que los datos locales del agente siempre sean accesibles.
+   Se implementó un bloque `try/except`. Si la API falla o tarda demasiado, el servidor responde con un mensaje de fallback ("Información externa no disponible") en lugar de fallar, garantizando que los datos locales del agente siempre sean accesibles.
 
 ## 📚 Referencias consultadas
 - [FastAPI Documentation](https://fastapi.tiangolo.com/)

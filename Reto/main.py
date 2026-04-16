@@ -21,6 +21,10 @@ from db import (
 )
 from config import AGENCIA_API_KEY, EXTERNAL_API_URL
 
+# Se usó INFO como nivel base porque es suficiente para rastrear el flujo normal sin
+# llenar los logs de ruido. WARNING para fallos externos que no rompen el servidor,
+# ERROR para problemas reales que necesitan atención. El formato incluye fecha y nivel
+# para saber exactamente cuándo ocurrió cada evento sin revisar otros archivos.
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -58,6 +62,9 @@ class MisionRequest(BaseModel):
     creado_por: str = "sistema"
 
 
+# Se Decidió proteger solo los endpoints que modifican datos (POST): crear agentes,
+# enviar mensajes, crear y completar misiones. Los GET quedan libres porque leer
+# información no cambia el estado del sistema y no representa riesgo de integridad.
 _api_key_scheme = APIKeyHeader(name="X-API-KEY", auto_error=False)
 
 def verificar_api_key(x_api_key: str | None = Depends(_api_key_scheme)) -> str:
@@ -194,6 +201,10 @@ def completar_mision(mision_id: int, _: str = Depends(verificar_api_key)):
         "detalle_energia": mensaje_energia,
     }
 
+# Se eligió Open Notify (api.open-notify.org/astros.json) porque devuelve en tiempo real
+# las personas en el espacio — encaja con la narrativa de agentes en misión activa.
+# Si la API falla o tarda más de 3 segundos, el servidor responde igual con un campo
+# de fallback; nunca devuelve 500 por culpa de un tercero.
 @app.get("/briefing/{nombre}", summary="Briefing completo del agente (datos locales + fuente externa)")
 def briefing(nombre: str):
     datos = despertar_agente(nombre)

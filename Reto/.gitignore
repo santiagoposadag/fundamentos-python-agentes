@@ -1,0 +1,8 @@
+# Este archivo .gitignore le dice a Git qué archivos o carpetas debe ignorar (no rastrear).
+# Es útil para evitar subir archivos sensibles, temporales o de configuración local.
+
+.env
+.venv/
+.venv-1/
+__pycache__/
+*.db

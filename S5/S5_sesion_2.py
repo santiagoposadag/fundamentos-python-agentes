@@ -130,7 +130,7 @@ app = FastAPI(
 
 @app.get("/")
 def inicio():
-    return {"status": "online", "mensaje": "Bienvenido al sistema de agentes"}
+    return {"status": "online", "mensaje": "¡Bienvenido al sistema de agentes!"} #Bienvenido al sistema de agentes
 
 
 # PRUEBA: Abre http://localhost:8000/docs en tu navegador. Esa es Swagger UI.
@@ -138,7 +138,9 @@ def inicio():
 #         por FastAPI a partir de tu codigo. Puedes probar endpoints ahi mismo.
 # PRUEBA: Cambia el mensaje de arriba, guarda el archivo, y recarga /docs.
 #         uvicorn --reload detecta el cambio y reinicia el servidor solo.
-# CONCLUSION:
+# CONCLUSION: Un endpoint es el punto de contacto entre el cliente y el servidor. 
+# FastAPI facilita la creación de APIs al convertir automáticamente objetos de Python (diccionarios) en formato JSON, 
+# y la herramienta Swagger UI (/docs) permite realizar pruebas en tiempo real sin escribir código de frontend.
 
 
 # ======================================================
@@ -157,21 +159,23 @@ def inicio():
 # Para eso usamos HTTPException.
 
 # --- Descomenta el siguiente bloque, ejecuta y observa ---
-# @app.get("/agente/{nombre}")
-# def obtener_agente(nombre: str):
-#     agente = despertar_agente(nombre)
-#     if agente is None:
-#         raise HTTPException(status_code=404, detail=f"Agente '{nombre}' no encontrado")
-#     return agente
-#
-#
-# @app.get("/agentes/")
-# def obtener_todos_los_agentes():
-#     return listar_agentes()
+@app.get("/agente/{nombre}")
+def obtener_agente(nombre: str):
+    agente = despertar_agente(nombre)
+    if agente is None:
+        raise HTTPException(status_code=404, detail=f"Agente '{nombre}' no encontrado")
+    return agente
+
+
+@app.get("/agentes/")
+def obtener_todos_los_agentes():
+    return listar_agentes()
 
 # PRUEBA: Prueba en Swagger UI: busca un agente que exista y uno que no.
 #         ¿Que respuesta recibes? ¿Que codigo HTTP retorna cada caso?
-# CONCLUSION:
+# CONCLUSION: Los Path Parameters ({nombre}) permiten que una sola ruta sea dinámica y sirva para consultar diferentes registros. 
+# El uso de HTTPException es fundamental para comunicarle al cliente, mediante códigos estándar (como el 404), que el recurso solicitado no existe en la base de datos.
+# Recibo 200 con los agentes que existen y 404 con el mensaje de error para los que no existen.
 
 
 # ======================================================
@@ -191,29 +195,31 @@ def inicio():
 # con detalles de que salio mal. No necesitas escribir validacion manual.
 
 # --- Descomenta el siguiente bloque, ejecuta y observa ---
-# @app.post("/agentes/")
-# def crear_agente(agente: AgenteRequest):
-#     resultado = registrar_agente(agente.nombre, agente.rol, agente.energia)
-#     return {"mensaje": resultado}
-#
-#
-# @app.post("/mensajes/")
-# def crear_mensaje(mensaje: MensajeRequest):
-#     resultado = enviar_mensaje(mensaje.remitente, mensaje.destinatario, mensaje.contenido)
-#     return {"mensaje": resultado}
-#
-#
-# @app.get("/mensajes/{nombre}")
-# def obtener_mensajes(nombre: str):
-#     return leer_mensajes(nombre)
+@app.post("/agentes/")
+def crear_agente(agente: AgenteRequest):
+    resultado = registrar_agente(agente.nombre, agente.rol, agente.energia)
+    return {"mensaje": resultado}
+
+
+@app.post("/mensajes/")
+def crear_mensaje(mensaje: MensajeRequest):
+    resultado = enviar_mensaje(mensaje.remitente, mensaje.destinatario, mensaje.contenido)
+    return {"mensaje": resultado}
+
+
+@app.get("/mensajes/{nombre}")
+def obtener_mensajes(nombre: str):
+    return leer_mensajes(nombre)
 
 # PRUEBA: En Swagger UI: crea un agente nuevo via POST /agentes/.
-#         Luego consultalo via GET /agente/{nombre}. ¿Aparece?
+#         Luego consultalo via GET /agente/{nombre}. ¿Aparece? R=S=Si, aparece el agente que creamos. (200 OK)
 # PRUEBA: Envia un mensaje via POST /mensajes/.
 #         Luego consulta la bandeja via GET /mensajes/{nombre}.
 # PRUEBA: Intenta enviar un POST con energia="hola" en vez de un numero.
-#         ¿Que error recibes? Esa es la validacion automatica de Pydantic.
-# CONCLUSION:
+#         ¿Que error recibes? Esa es la validacion automatica de Pydantic. R=Recibo un error 422.
+# CONCLUSION: El método POST se utiliza para enviar datos complejos al servidor a través del cuerpo (body) de la petición en formato JSON. 
+# Los modelos de Pydantic son esenciales porque automatizan la validación de tipos de datos, garantizando que el servidor solo procese información válida 
+# y proporcionando errores claros al cliente cuando los datos son incorrectos.
 
 
 # -----------------------------------------------------------#
@@ -229,3 +235,7 @@ def inicio():
 # - HTTPException: errores HTTP con codigos estandar
 # - Swagger UI: documentacion interactiva gratuita
 # -----------------------------------------------------------#
+
+# CONCLUSION FINAL: El uso coordinado de POST (para enviar) y GET (para leer) permite crear sistemas de comunicación asíncronos. 
+# La API actúa como un intermediario seguro que valida quién envía y quién recibe, 
+# mientras que la base de datos asegura que el historial de mensajes no se pierda al apagar el servidor.
